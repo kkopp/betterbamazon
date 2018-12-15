@@ -70,17 +70,12 @@ function buyItem() {
           message: "Great choice!  You picked item " + answer.buyproduct + "! How many of those would you like?"
         })
         .then(function (answer2) {
-          var query = 
 
           connection.query("SELECT stock_quantity FROM products WHERE ?", {stock_quantity: answer2.buyquantity}, function (err, res) {
 
             for (var i = 0; i < res.length; i++);
-            console.log("does this this really work?")
-            // if (i <= res) {
-            //   var rainbow = chalkAnimation.rainbow("Thank you for shopping at Bamazon!");
-            //   console.log("Great!  We have that in stock!")
-            //   rainbow.start();
-            // }
+            var rainbow = chalkAnimation.rainbow("Thank you for shopping at Bamazon!");
+            rainbow.start();
 
           })
         })

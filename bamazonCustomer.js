@@ -4,7 +4,8 @@ var mysql = require("mysql");
 var inquirer = require("inquirer");
 var Table = require("easy-table");
 var chalk = require("chalk");
-const chalkAnimation = require('chalk-animation');
+var chalkAnimation = require('chalk-animation');
+var figlet = require('figlet');
 
 var connection = mysql.createConnection({
   host: process.env.DB_HOST,
@@ -18,13 +19,38 @@ var connection = mysql.createConnection({
   database: "bamazon"
 });
 
+// figlet.fonts(function(err, fonts) {
+//   if (err) {
+//       console.log('something went wrong...');
+//       console.dir(err);
+//       return;
+//   }
+//   console.dir(fonts);
+// });
+
+figlet.text('Bamazon', {
+  font: "crazy",
+  horizontalLayout: 'default',
+  verticalLayout: 'default'
+}, function(err, data) {
+  if (err) {
+      console.log('Something went wrong...');
+      console.dir(err);
+      return;
+  }
+  console.log("\n-----------------------------------------------------------------------------------\n");
+  console.log(data);
+  console.log("\n-----------------------------------------------------------------------------------\n");
+});
+
 connection.connect(function (err) {
   if (err) throw err;
 
   //console.log("You are connected");
-  console.log(chalk.hex('#33B2FF').underline("Welcome to Bamazon!"))
+
   showAllItems();
-  //runSearch();
+
+
 });
 
 
@@ -32,7 +58,6 @@ function showAllItems() {
 
   var query = "SELECT * FROM products";
 
-  
   connection.query(query, function (err, res) {
     //console.log(Object.values(res));
 
@@ -48,36 +73,68 @@ function showAllItems() {
     })
 
     console.log(t.toString())
-
     buyItem();
+
   })
 }
 
 function buyItem() {
+  console.log("\n-----------------------------------------------------------------------------------\n");
 
-  inquirer
-    .prompt({
-      name: "buyproduct",
+  inquirer.prompt([
+    {
       type: "input",
+      name: "buyproduct",
       message: "What product ID would you like to purchase today?",
-    })
+
+    },
+    {
+      type: "input",
+      name: "buyquantity",
+      message: "Great choice! How many of those would you like?",
+
+    }
+  ])
+
     .then(function (answer) {
 
-      inquirer
-        .prompt({
-          name: "buyquantity",
-          type: "input",
-          message: "Great choice!  You picked item " + answer.buyproduct + "! How many of those would you like?"
-        })
-        .then(function (answer2) {
+      var product = answer.buyproduct;
+      var quantity = answer.buyquantity;
 
-          connection.query("SELECT stock_quantity FROM products WHERE ?", {stock_quantity: answer2.buyquantity}, function (err, res) {
+      var query = "SELECT product_name, price, stock_quantity FROM products WHERE ?";
 
-            for (var i = 0; i < res.length; i++);
+      connection.query(query, { item_id: product }, function (err, res) {
+
+        if (err) throw err;
+
+        //console.log(res[0]);
+        var itemInfo = res[0];
+        if (quantity <= itemInfo.stock_quantity) {
+          console.log("\n-----------------------------------------------------------------------------------\n");
+          console.log("Fantastic! We have " + itemInfo.stock_quantity + " " + itemInfo.product_name + " in stock!");
+          var updateQuery = "UPDATE products SET stock_quantity = " + (itemInfo.stock_quantity - quantity) + " WHERE item_id = " + product;
+
+          //console.log(updateQuery);
+
+          connection.query(updateQuery, function (err, res) {
+            if (err) throw err;
+
+            console.log("Your order has now been placed! Your invoice for $" + itemInfo.price * quantity + " will be sent to the address we have on file.");
             var rainbow = chalkAnimation.rainbow("Thank you for shopping at Bamazon!");
+            console.log("\n-----------------------------------------------------------------------------------\n");
             rainbow.start();
+            connection.end();
 
           })
-        })
+
+        } else {
+
+            console.log("I'm sorry.  We do not have enough " + res[0].product_name + " in stock. Please order another quantity.")
+            console.log("\n----------------------------------------------------------------------------------\n");
+            showAllItems();
+
+        }
+      })
+
     });
 }

@@ -86,12 +86,27 @@ function buyItem() {
       type: "input",
       name: "buyproduct",
       message: "What product ID would you like to purchase today?",
-
+      validate: function(value) {
+        if (Number.isInteger(parseFloat(value))) {
+          return true;
+        } else {
+          return "Invalid Input. Please enter a number.";
+        }
+      },
+      filter: Number
     },
     {
       type: "input",
       name: "buyquantity",
       message: "Great choice! How many of those would you like?",
+      validate: function(value) {
+        if (Number.isInteger(parseFloat(value))) {
+          return true;
+        } else {
+          return "Invalid Input. Please enter a number.";
+        }
+      },
+      filter: Number
 
     }
   ])

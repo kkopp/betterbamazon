@@ -3,7 +3,6 @@ require('dotenv').config();
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 var Table = require("easy-table");
-var chalk = require("chalk");
 var chalkAnimation = require('chalk-animation');
 var figlet = require('figlet');
 
@@ -134,9 +133,10 @@ function buyItem() {
           connection.query(updateQuery, function (err, res) {
             if (err) throw err;
 
-            console.log("Your order has now been placed! Your invoice for $" + itemInfo.price * quantity + " will be sent to the address we have on file.");
+            console.log("Your order has now been placed! The amount due is $" + itemInfo.price * quantity + ".")
+            console.log("All items will be shipped to the address we have on file.");
+            console.log("");
             var rainbow = chalkAnimation.rainbow("Thank you for shopping at Bamazon!");
-            console.log("\n-----------------------------------------------------------------------------------\n");
             rainbow.start();
             connection.end();
 
@@ -144,7 +144,7 @@ function buyItem() {
 
         } else {
 
-            console.log("I'm sorry.  We do not have enough " + res[0].product_name + " in stock. Please order another quantity.")
+            console.log("We do not have enough " + res[0].product_name + " in stock. Please order another quantity.")
             console.log("\n----------------------------------------------------------------------------------\n");
             showAllItems();
 
